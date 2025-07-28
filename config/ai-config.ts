@@ -48,15 +48,14 @@ function getEnvVar(key: string, defaultValue: string = ''): string {
     return process.env[key] || defaultValue;
   }
   
-  // 临时硬编码配置，确保应用能正常运行
+  // 安全的默认配置（不包含敏感信息）
   const fallbackConfig: Record<string, string> = {
-    'DEEPSEEK_API_KEY': 'sk-3778c4f444634a55b736ca018107a441',
     'DEEPSEEK_BASE_URL': 'https://api.deepseek.com',
     'DEEPSEEK_MODEL': 'deepseek-chat',
     'NEXT_PUBLIC_APP_NAME': 'Love Chat AI',
     'NEXT_PUBLIC_APP_VERSION': '1.0.0',
     'NEXT_PUBLIC_DEFAULT_PROVIDER': 'deepseek',
-    'DEBUG_MODE': 'true'
+    'DEBUG_MODE': 'false'
   };
   
   return fallbackConfig[key] || defaultValue;
