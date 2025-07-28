@@ -1,11 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  env: {
-    // 允许在客户端访问的环境变量
-    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
-    DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL,
-    DEEPSEEK_MODEL: process.env.DEEPSEEK_MODEL,
-  },
+  // 移除了客户端环境变量暴露以确保安全
+  // API密钥等敏感信息只在服务端使用
 }
 
 module.exports = nextConfig

@@ -31,9 +31,9 @@ export function getDeepseekConfig(): DeepseekChatConfig {
   const config = aiConfig.deepseek;
   
   return {
-    apiKey: config.apiKey,
-    baseUrl: config.baseUrl,
-    model: config.model,
+    apiKey: config.apiKey || '',
+    baseUrl: config.baseUrl || 'https://api.deepseek.com',
+    model: config.model || 'deepseek-chat',
     maxTokens: 1000,
     temperature: 0.8, // 适合聊天的温度
     topP: 0.9,
@@ -92,18 +92,22 @@ export function validateDeepseekConfig(): {
 } {
   const config = aiConfig.deepseek;
   
-  if (!config.apiKey) {
+  // 只检查API key，其他配置使用默认值
+  if (!config.apiKey || config.apiKey.trim() === '') {
     return {
       isValid: false,
       error: 'Deepseek API密钥未配置，请在 .env.local 文件中设置 DEEPSEEK_API_KEY'
     };
   }
   
+  // 确保有默认的baseUrl
   if (!config.baseUrl) {
-    return {
-      isValid: false,
-      error: 'Deepseek API基础URL未配置'
-    };
+    config.baseUrl = 'https://api.deepseek.com';
+  }
+  
+  // 确保有默认的model
+  if (!config.model) {
+    config.model = 'deepseek-chat';
   }
   
   return { isValid: true };

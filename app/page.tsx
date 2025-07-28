@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, MessageCircle, RotateCcw, Send, Copy, Check } from 'lucide-react';
-import OpenAI from 'openai';
-import { getDeepseekConfig, validateDeepseekConfig } from '@/config/deepseek-client';
 
 interface ChatHistory {
   input: string;
@@ -15,14 +13,6 @@ interface ChatHistory {
   responses: string[];
   timestamp: number;
 }
-
-// 使用配置文件中的安全配置
-const deepseekConfig = getDeepseekConfig();
-const openai = new OpenAI({
-  baseURL: deepseekConfig.baseUrl,
-  apiKey: deepseekConfig.apiKey,
-  dangerouslyAllowBrowser: true
-});
 
 export default function Home() {
   const [userInput, setUserInput] = useState('');
@@ -36,14 +26,7 @@ export default function Home() {
   const [userGender, setUserGender] = useState<'male' | 'female'>('male');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // 检查配置有效性
-  useEffect(() => {
-    const validation = validateDeepseekConfig();
-    if (!validation.isValid) {
-      console.error('Deepseek配置错误:', validation.error);
-      alert('请配置Deepseek API密钥才能使用聊天功能');
-    }
-  }, []);
+  // 配置检查现在在服务端进行
 
   // Load history from localStorage
   useEffect(() => {
@@ -205,17 +188,30 @@ export default function Home() {
     setCurrentResponseIndex(-1);
 
     try {
-      const completion = await openai.chat.completions.create({
-        messages: [
-          { role: "system", content: generateSystemPrompt(flirtLevel[0]) },
-          { role: "user", content: userInput }
-        ],
-        model: "deepseek-chat",
-        temperature: 0.8,
+      // 调用我们的安全 API 路由
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: "system", content: generateSystemPrompt(flirtLevel[0]) },
+            { role: "user", content: userInput }
+          ],
+          model: "deepseek-chat",
+          temperature: 0.8,
+        }),
       });
 
-      const content = completion.choices[0].message.content || '';
-      const generatedResponses = content.split('\n').filter(r => r.trim()).slice(0, 3);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '服务器错误');
+      }
+
+      const data = await response.json();
+      const content = data.content || '';
+      const generatedResponses = content.split('\n').filter((r: string) => r.trim()).slice(0, 3);
       
       // Ensure we have exactly 3 responses
       while (generatedResponses.length < 3) {
